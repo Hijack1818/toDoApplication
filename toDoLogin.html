@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .container.show {
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button onclick="toggleForm('loginForm')">Login</button>
+    <button onclick="toggleForm('registerForm')">Register</button>
+
+    <div class="container" id="loginFormContainer">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="error" id="loginError"></div>
+            <label for="username">Username:</label>
+            <input type="text" id="loginUsername" required>
+            <label for="password">Password:</label>
+            <input type="password" id="loginPassword" required>
+            <input type="submit" value="Login">
+        </form>
+    </div>
+    </div>
+    <br>
+    <div class="container" id="registerFormContainer">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <div class="error" id="registerError"></div>
+            <label for="username">Username:</label>
+            <input type="text" id="registerUsername" required>
+            <label for="password">Password:</label>
+            <input type="password" id="registerPassword" required>
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" required>
+            <input type="submit" value="Register">
+        </form>
+    </div>
+    </div>
+
+    <script>
+        function toggleForm(formId) {
+            const formContainer = document.getElementById(formId + 'Container');
+            formContainer.classList.toggle('show');
+
+            // Hide other form
+            const otherFormId = (formId === 'loginForm') ? 'registerForm' : 'loginForm';
+            const otherFormContainer = document.getElementById(otherFormId + 'Container');
+            otherFormContainer.classList.remove('show');
+        }
+
+        // Function to handle login form submission
+        document.getElementById("loginForm").onsubmit = function (event) {
+            event.preventDefault();
+            const userName = document.getElementById("loginUsername").value;
+            const password = document.getElementById("loginPassword").value;
+            // Add your login logic here (e.g., sending data to a server for validation)
+            // For this example, we just show an error message
+            fetch("/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userName,
+                    password
+                })
+            }).then(response => response.json()).then(data => {
+                if (data.status === 200) {
+                    document.getElementById("loginError").innerText = data.message;
+                    // setTimeout(() => {
+                    // window.location.href = "/";
+                    response.redirect("/").body(data.task);
+                    // }, 1000);
+                } else {
+                    document.getElementById("loginError").innerText = data.message;
+                }
+            });
+
+            // document.getElementById("loginError").innerText = "Login functionality not implemented yet!";
+        };
+
+        // Function to handle register form submission
+        document.getElementById("registerForm").onsubmit = function (event) {
+            event.preventDefault();
+            const userName = document.getElementById("registerUsername").value;
+            const password = document.getElementById("registerPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            // Add your registration logic here (e.g., sending data to a server for processing)
+            // For this example, we just show an error message
+
+            fetch("/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userName,
+                    password,
+                    confirmPassword
+                })
+            }).then(response => response.json()).then(data => {
+                if (data.status === 200) {
+                    document.getElementById("registerError").innerText = data.message;
+                    setTimeout(() => {
+                        toggleForm('loginForm');
+                    }, 1000);
+                } else {
+                    document.getElementById("registerError").innerText = data.message;
+                }
+            });
+
+            // document.getElementById("registerError").innerText = "Registration functionality not implemented yet!";
+        };
+    </script>
+</body>
+
+</html>

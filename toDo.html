@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #taskList {
+            margin: 20px auto;
+            max-width: 600px;
+            background-color: #f2f2f2;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #taskForm {
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .task-item {
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .task-title {
+            font-weight: bold;
+        }
+
+        .task-priority {
+            font-style: italic;
+        }
+
+        .task-delete {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #f44336;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .task-done {
+            position: absolute;
+            top: 5px;
+            right: 65px;
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .task-done.done {
+            background-color: #ccc;
+            cursor: default;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Task List</h1>
+    <div id="taskList">
+    </div>
+
+    <div id="taskForm">
+        <h2>Add Task</h2>
+        <form id="addTaskForm">
+            <label for="title">Title:</label>
+            <input type="text" id="title" required>
+            <label for="priority">Priority:</label>
+            <select id="priority" required>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <label for="details">Task Details:</label>
+            <textarea id="details" required></textarea>
+            <input type="submit" value="Add Task">
+        </form>
+    </div>
+
+    <script>
+        // Function to handle form submission and add tasks to the list
+        document.getElementById("addTaskForm").onsubmit = function (event) {
+            event.preventDefault();
+            const title = document.getElementById("title").value;
+            const priority = document.getElementById("priority").value;
+            const details = document.getElementById("details").value;
+
+            fetch("/addTask", {
+                method: "POST",
+                body: JSON.stringify({
+                    taskTitle: title,
+                    taskPriority: priority,
+                    taskDetails: details,
+                    taskStatus: false,
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(response => response.json()).then(data => {
+                if (data.status == 200) {
+                    const taskItem = document.createElement("div");
+                    taskItem.classList.add("task-item");
+                    taskItem.innerHTML = `
+                    <div class="task-title">${title}</div>
+                    <div class="task-priority">Priority: ${priority}</div>
+                    <div class="task-details">${details}</div>
+                    <button class="task-delete" onclick="deleteTask(this)">Delete</button>
+                    <button class="task-done" onclick="markDone(this)">Mark as Done</button>
+                    `;
+                    document.getElementById("taskList").appendChild(taskItem);
+                    document.getElementById("addTaskForm").reset();
+                    console.log(data);
+                }
+                else {
+                    alert("Title already exists");
+                    console.log(data);
+                }
+
+            });
+
+
+        };
+        // Function to handle task deletion
+        function deleteTask(button) {
+            const taskItem = button.parentElement;
+            const taskTitle = taskItem.querySelector(".task-title").innerText;
+            fetch("/deleteTask", {
+                method: "POST",
+                body: JSON.stringify({
+                    taskTitle: taskTitle
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(response => response.json()).then(data => {
+                console.log(data);
+            });
+            taskItem.remove();
+        }
+
+        // Function to handle marking a task as done
+        function markDone(button) {
+            const taskItem = button.parentElement;
+            const taskTitle = taskItem.querySelector(".task-title").innerText;
+            fetch("/updateTaskStatus", {
+                method: "POST",
+                body: JSON.stringify({
+                    taskTitle: taskTitle
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(response => response.json()).then(data => {
+                console.log(data);
+            });
+            taskItem.classList.toggle('done');
+            button.disabled = true;
+            button.innerText = 'Done';
+        }
+    </script>
+</body>
+
+</html>
