@@ -103,7 +103,7 @@
 </head>
 
 <body>
-    <h1>Task List</h1>
+    <h1>Task List Welcome <span id="username">%User%</span></h1>
     <div id="taskList">
     </div>
 
@@ -123,8 +123,19 @@
             <input type="submit" value="Add Task">
         </form>
     </div>
+    <div>
+        <button id="logout" onclick="logout()">Logout</button>
+    </div>
 
     <script>
+
+        const taskList = document.getElementById("taskList");
+
+        // Function to fetch all tasks from the database
+        // function taskAdd() {
+        //     req.session.user = req.body.username;
+        // }
+
         // Function to handle form submission and add tasks to the list
         document.getElementById("addTaskForm").onsubmit = function (event) {
             event.preventDefault();
@@ -154,7 +165,7 @@
                     <button class="task-delete" onclick="deleteTask(this)">Delete</button>
                     <button class="task-done" onclick="markDone(this)">Mark as Done</button>
                     `;
-                    document.getElementById("taskList").appendChild(taskItem);
+                    taskList.appendChild(taskItem);
                     document.getElementById("addTaskForm").reset();
                     console.log(data);
                 }
@@ -180,9 +191,10 @@
                     "Content-Type": "application/json"
                 }
             }).then(response => response.json()).then(data => {
-                console.log(data);
+                // console.log(data);
+                taskItem.remove();
             });
-            taskItem.remove();
+
         }
 
         // Function to handle marking a task as done
@@ -198,12 +210,30 @@
                     "Content-Type": "application/json"
                 }
             }).then(response => response.json()).then(data => {
-                console.log(data);
+                // console.log(data);
+                taskItem.classList.toggle('done');
+                button.disabled = true;
+                button.innerText = 'Done';
             });
-            taskItem.classList.toggle('done');
-            button.disabled = true;
-            button.innerText = 'Done';
+
         }
+
+        function logout() {
+            fetch("/logout", {
+                method: "POST",
+                body: JSON.stringify({
+                    username: document.getElementById("username").innerText,
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(response => response.json()).then(data => {
+                // console.log(data.message);
+                window.location.href = "/login";
+            });
+        }
+
+
     </script>
 </body>
 

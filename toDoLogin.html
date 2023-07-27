@@ -111,12 +111,10 @@
             }).then(response => response.json()).then(data => {
                 if (data.status === 200) {
                     document.getElementById("loginError").innerText = data.message;
-                    // setTimeout(() => {
-                    // window.location.href = "/";
-                    response.redirect("/").body(data.task);
-                    // }, 1000);
+                    window.location.href = "/";
                 } else {
                     document.getElementById("loginError").innerText = data.message;
+                    return;
                 }
             });
 
